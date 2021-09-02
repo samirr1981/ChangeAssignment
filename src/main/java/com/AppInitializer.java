@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,6 +16,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.Comparator;
 
 
@@ -31,7 +33,7 @@ public class AppInitializer {
 	
 	private int maxAvailableChange = 0;
 	
-	private Map<Integer, Integer> sortedAvailabeCoins = new LinkedHashMap<>();
+	private Map<Integer, Integer> sortedAvailabeCoins = new TreeMap<>();
 
 
 	private final Set<Integer> validBills = Stream.of(1, 2, 5, 10, 20, 50, 100)
@@ -41,7 +43,9 @@ public class AppInitializer {
 	public Map<Integer, Integer> getSortedAvailabeCoins() {
 		return this.sortedAvailabeCoins;
 	}
-
+	public void setSortedAvailabeCoins(Map<Integer, Integer> coins) {
+		this.sortedAvailabeCoins = coins;
+	}
 
 	public synchronized void useAvailabeCoins(Integer coin, Integer number) {
 		// TODO validation for key
@@ -50,15 +54,13 @@ public class AppInitializer {
 
 	public void sortAvailabeCoins(String order) {
 		if(order.equals("MAX")) {
-			this.getSortedAvailabeCoins().entrySet().stream()
-					.sorted(Map.Entry.comparingByKey(Comparator.naturalOrder()))
-					.forEachOrdered(x -> this.getSortedAvailabeCoins().put(x.getKey(), x.getValue()));
+			Map<Integer, Integer> coins = new TreeMap<>(Collections.reverseOrder());
+
+    		coins.putAll(this.sortedAvailabeCoins);
+    		this.setSortedAvailabeCoins(coins);
 	
 		}else {
-			this.getSortedAvailabeCoins().entrySet().stream()
-			.sorted(Map.Entry.comparingByKey(Comparator.reverseOrder()))
-			.forEachOrdered(x -> this.getSortedAvailabeCoins().put(x.getKey(), x.getValue()));
-
+			this.setSortedAvailabeCoins( new TreeMap<Integer, Integer>(this.sortedAvailabeCoins));
 		}
 	}
 
@@ -91,12 +93,7 @@ public class AppInitializer {
 	 @PostConstruct
 	 public void init() {
 		 this.initializeCoinsDeno();
-		 
-//		 this.coinsDenominator.entrySet().stream().sorted(Map.Entry.comparingByKey(Comparator.reverseOrder()))
-//			.forEachOrdered(x -> this.sortedAvailabeCoins.put(x.getKey(), x.getValue()));
-//		 
-		 this.coinsDenominator.entrySet().stream().sorted(Map.Entry.comparingByKey(Comparator.naturalOrder()))
-			.forEachOrdered(x -> this.sortedAvailabeCoins.put(x.getKey(), x.getValue()));
+		 this.setSortedAvailabeCoins( new TreeMap<Integer, Integer>(this.coinsDenominator));
 
 	 }
 	 
